@@ -1,0 +1,31 @@
+body {
+    font-family: 'Chakra Petch', sans-serif;
+    text-align: center;
+    background-image:linear-gradient(yellow,red);
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 100vh;
+}
+header{
+    background-color: darkcyan;
+    text-align: center;
+    border: 10px outset wheat;
+    height: 150px;
+    margin: 0 auto;
+    width: 50%;
+}
+h4{
+    margin: 0 0 0 0;
+}
+#head{
+    margin: 0;
+    padding-top: 30PX;
+}
+#searchbar{
+    padding-bottom: 10px;
+    margin-top: 50px;
+}
+#answers{
+    padding-top: 10px;
+    display: none;
+}

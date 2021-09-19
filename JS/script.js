@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////Global Event Handlers/////////////////////////////////////////////////////////////////////////////////
 //Handles an artist submission
-$("#submitArtist").on('click', playQuiz);
-
-//prevents multiple event listeners from being created on answers submit
-isFirst = true
+$("#submitArtist").on('click', ()=>{
+  playQuiz()
+  $("#answers").css("display","block")
+});
 
 //Asks multiple questions about the artist within the text input at the time the function is called
 function playQuiz(){
@@ -46,10 +46,13 @@ $("#submitArtist").on('click', ()=>{
     url: `https://musicbrainz.org/ws/2/artist/?query=${userInput}&fmt=json`,
   }).then(
     (data) => {
+      console.log(data.artists)
       artistID = data.artists[0].id
       //once artist ID is aquired  we make another ajax call using the artist ID to assign all the artist variables
       $.ajax({
-        url: `https://musicbrainz.org/ws/2/artist/${artistID}?fmt=json&inc=releases`,}).then(function (idData){
+        url: `https://musicbrainz.org/ws/2/artist/${artistID}?fmt=json&inc=releases`,
+      })
+        .then(function (idData){
         artistType = idData.type
         artistOrigin = idData['begin-area'].name
         artistStartYr = parseInt(idData['life-span'].begin.substr(0,4))
@@ -105,7 +108,7 @@ $("#submitArtist").on('click', ()=>{
   };
   //displays the users score using the playerScore var and the declares that the game is oever, takes in the total number of questions as param 1 and total right as param 2
   function displayResults(noQuestions, NoRight){
-    alert(NoRight/noQuestions)
+    alert(NoRight+"/"+noQuestions +" questions correct")
     questionNo = null;
   };
   //this function appends 4 answers to the h3 elements in the html in random order the correct answer being the fourth input param and also increases question no by 1 
@@ -123,19 +126,16 @@ $("#submitArtist").on('click', ()=>{
     switch(questionNo){
       case 1:
       if($(`label[for=${currCheckbox}]`).html() == artistStartYr){
-        console.log("u right")
         playerScore += 1
       }
       break;
       case 2:
       if($(`label[for=${currCheckbox}]`).html() == artistOrigin){
-        console.log("u right")
         playerScore += 1
       }
       break;
       case 3:
       if($(`label[for=${currCheckbox}]`).html() == artistRelease){
-        console.log("u right")
         playerScore += 1
       }
       break;
