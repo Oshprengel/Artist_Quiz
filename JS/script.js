@@ -1,9 +1,34 @@
 ////////////////////////////////////////////////////////////////Global Event Handlers/////////////////////////////////////////////////////////////////////////////////
+//global userinput variable
+var userInput = null;
+var artistData = null;
+var artistID = null;
 //Handles an artist submission
-$("#submitArtist").on('click', ()=>{
-  playQuiz()
-  $("#answers").css("display","block")
-});
+$("#submitArtist").on('click', qSearch);
+function qSearch(){
+  //variables that represent the users search query and the artists id if the call is made succcesfully 
+  userInput = $("#searchBar").val()
+  //formats the user input into the proper format
+  userInput = userInput.replaceAll(" ", "%20")
+
+  $.ajax({
+    url: `https://musicbrainz.org/ws/2/artist/?query=${userInput}&fmt=json`,
+    error: ()=>{alert("Please enter an artist")}
+  }).then(
+    (data)=>{
+      //if an artist is successfully acquired then set the artist id to the id acquired by the search and run the playquiz function
+      if(data.artists[0]){
+        artistID = data.artists[0].id
+        artistData = data;
+        playQuiz()
+      }
+      //otherwise alert the user that their entry is not valid
+      else{
+        alert("Invalid entry")
+      }
+    }
+  )
+}
 
 //Asks multiple questions about the artist within the text input at the time the function is called
 function playQuiz(){
@@ -23,31 +48,27 @@ function playQuiz(){
       askQuestion(questionNo)
     }
   })
-//if a new artist is submitted mid quiz then question no is set to null to prevent the current quiz from interfering with the new one
+//if a new artist is submitted mid quiz then then playerscore is set to null if the search query is valid
 $("#submitArtist").on('click', ()=>{
-  questionNo = null;
-});
+  userInput = $("#searchBar").val()
+  $.ajax({
+    url: `https://musicbrainz.org/ws/2/artist/?query=${userInput}&fmt=json`,
+  }).then((data)=>{
+    if(data.artists[0]){
+      questionNo = null;
+    }
+  })
+})
   ////////////////variables for artists data and players current score///////////////
-  var userInput = $("#searchBar").val()
   var artistOrigin = null;
   var artistRelease = null;
   var artistStartYr = null;
   var artistType = null;
   var playerScore = 0;
-  var artistName = null;
   var questionNo = 0;
   var currUserAnswer = null;
+  var artistName = null;  
   ///////////////////Ajax call which assigns artist data to its proper variables///////////////////
-  //formats the user input into the proper format
-  userInput = userInput.replace(" ", "%20")
-  //retrieves artist ID then assigns it to artistID
-  artistID = null;
-  $.ajax({
-    url: `https://musicbrainz.org/ws/2/artist/?query=${userInput}&fmt=json`,
-  }).then(
-    (data) => {
-      console.log(data.artists)
-      artistID = data.artists[0].id
       //once artist ID is aquired  we make another ajax call using the artist ID to assign all the artist variables
       $.ajax({
         url: `https://musicbrainz.org/ws/2/artist/${artistID}?fmt=json&inc=releases`,
@@ -60,11 +81,8 @@ $("#submitArtist").on('click', ()=>{
         artistName = idData.name
         askQuestion(0)
         })
-      }),
-    (error) => {
-      console.log("cannot retrieve artist ID: ", error);
-    }
-  ;
+
+
   
   ///////////////////functions neccesary for playing the quiz///////////////////
   function askQuestion(questionNo){
@@ -77,6 +95,8 @@ $("#submitArtist").on('click', ()=>{
     ]
     //random index var to be used for splicing answers into array
     let randomIndex = 0;
+    //makes the questions visible
+    $("#answers").css("display","block")
     //asks a question(which question is asked is dependent on the questionNo var)
     switch(questionNo) {
       case 0:
