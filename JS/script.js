@@ -168,9 +168,8 @@ $("#submitArtist").on('click', ()=>{
   //displays the users score using the playerScore var and the declares that the game is oever, takes in the total number of questions as param 1 and total right as param 2
   function displayResults(noQuestions, NoRight){
     $("#answers").css("display","none")
-    console.log(noQuestions +`/`+ NoRight)
     $("#Results").append(`<p>Results<br>${Math.floor(NoRight/noQuestions*100)}% correct<p> `)
-    resultEle.forEach((currEle)=>{
+    resultEle.reverse().forEach((currEle)=>{
       console.log(currEle)
       $("#Results").append(currEle)
     }) 
@@ -193,28 +192,28 @@ $("#submitArtist").on('click', ()=>{
       if($(`label[for=${currCheckbox}]`).html() == artistStartYr){
         playerScore += 1
         //if questions are correct then the proper html element gets appended to the body otherwise the else statment is hit and the proper html statement gets appended
-        resultEle.unshift($(`<p class = correct> Question 1: Correct <br> The Question: ${questions[0]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}</p><br>`))
+        resultEle.unshift($(`<p class = correct> Question ${numQuestions}: Correct <br> The Question: ${questions[0]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}</p><br>`))
       }
       else{
-        resultEle.unshift($(`<p class = inCorrect> Question 1: Incorrect <br> The Question: ${questions[0]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}<br>Correct answer: ${artistStartYr}</p><br>`))
+        resultEle.unshift($(`<p class = inCorrect> Question ${numQuestions}: Incorrect <br> The Question: ${questions[0]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}<br>Correct answer: ${artistStartYr}</p><br>`))
       }
       break;
       case 2:
       if($(`label[for=${currCheckbox}]`).html() == artistOrigin){
         playerScore += 1
-        resultEle.unshift($(`<p class = correct> Question 2: Correct <br> The Question: ${questions[1]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}</p><br>`))
+        resultEle.unshift($(`<p class = correct> Question ${numQuestions}: Correct <br> The Question: ${questions[1]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}</p><br>`))
       }
       else{
-        resultEle.unshift($(`<p class = inCorrect> Question 2: Incorrect <br> The Question: ${questions[1]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}<br>Correct answer: ${artistOrigin}</p><br>`))
+        resultEle.unshift($(`<p class = inCorrect> Question ${numQuestions}: Incorrect <br> The Question: ${questions[1]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}<br>Correct answer: ${artistOrigin}</p><br>`))
       }
       break;
       case 3:
       if($(`label[for=${currCheckbox}]`).html() == artistRelease){
         playerScore += 1
-        resultEle.unshift($(`<p class = correct> Question 3: Correct <br> The Question: ${questions[2]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}</p><br>`))
+        resultEle.unshift($(`<p class = correct> Question ${numQuestions}: Correct <br> The Question: ${questions[2]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}</p><br>`))
       }
       else{
-        resultEle.unshift($(`<p class = inCorrect> Question 3: Incorrect <br> The Question: ${questions[2]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}<br>Correct answer: ${artistRelease}</p><br>`))
+        resultEle.unshift($(`<p class = inCorrect> Question ${numQuestions}: Incorrect <br> The Question: ${questions[2]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}<br>Correct answer: ${artistRelease}</p><br>`))
       }
       break;
     }

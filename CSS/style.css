@@ -33,9 +33,11 @@ h4{
     background-color:rgba(255, 0, 0, 1);
     display: inline-block;
     margin: 0 0 0 0;
+    border: 10px solid black;
 }
 .correct{
     background-color:rgba(0, 255, 0, 1);
     display: inline-block;
     margin: 0 0 0 0;
+    border: 10px solid black;
 }
