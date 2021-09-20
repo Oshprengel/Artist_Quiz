@@ -56,6 +56,7 @@ $("#submitArtist").on('click', ()=>{
   }).then((data)=>{
     if(data.artists[0]){
       questionNo = null;
+      $("#Results").html("")
     }
   })
 })
@@ -67,17 +68,28 @@ $("#submitArtist").on('click', ()=>{
   var playerScore = 0;
   var questionNo = 0;
   var currUserAnswer = null;
-  var artistName = null;  
+  var artistName = null;
+  var numQuestions = null;
+  var questions = [];
+  var resultEle = [];
+  var questionsAsked = null;
+    
   ///////////////////Ajax call which assigns artist data to its proper variables///////////////////
       //once artist ID is aquired  we make another ajax call using the artist ID to assign all the artist variables
       $.ajax({
         url: `https://musicbrainz.org/ws/2/artist/${artistID}?fmt=json&inc=releases`,
       })
         .then(function (idData){
-        artistType = idData.type
-        artistOrigin = idData['begin-area'].name
-        artistStartYr = parseInt(idData['life-span'].begin.substr(0,4))
-        artistRelease = idData.releases[Math.floor(.99 + Math.random() * idData.releases.length)].title
+        
+        artistType = idData.type ? idData.type : "Sorry we dont have enough info on this artist"
+        //assigns variables only if they are availble from the api
+        artistOrigin = idData['begin-area'] ? idData['begin-area'].name : null
+        artistStartYr = idData['life-span'].begin ? parseInt(idData['life-span'].begin.substr(0,4)): null
+        artistRelease = idData.releases.length > 1 ?idData.releases[Math.floor(.99 + Math.random() * idData.releases.length)].title : null
+        //if no info on artist is availble then break function
+        if (!artistOrigin && !artistStartYr && !artistRelease){
+          alert("Sorry we dont have enough info on this artist") 
+          return null}
         artistName = idData.name
         askQuestion(0)
         })
@@ -85,10 +97,10 @@ $("#submitArtist").on('click', ()=>{
 
   
   ///////////////////functions neccesary for playing the quiz///////////////////
-  function askQuestion(questionNo){
+  function askQuestion(whichQuestion){
     
     //Creates a list of questions
-    const questions = [
+    questions = [
       `When was ${artistName} ${artistType === 'Person' ? 'born' : 'formed'}?`,
       `Where was ${artistName} ${artistType === 'Person' ? 'born' : 'formed'}?`,
       `Which one of these releases is from ${artistName}`
@@ -98,8 +110,10 @@ $("#submitArtist").on('click', ()=>{
     //makes the questions visible
     $("#answers").css("display","block")
     //asks a question(which question is asked is dependent on the questionNo var)
-    switch(questionNo) {
+    switch(whichQuestion) {
       case 0:
+        //the if and else case handles scenerious where certain info on the artis might not be avaible, in that scenerio it cuts to the next question
+        if(artistStartYr){
         //append the question to html
         $("#question").html(questions[0])
         //generate an array of random dates then splice the correct answer into the array
@@ -107,28 +121,59 @@ $("#submitArtist").on('click', ()=>{
         randomIndex = Math.floor(Math.random() * (dates.length + 1))
         dates.splice(randomIndex,0,artistStartYr)
         appendAnswers(dates)
+        numQuestions += 1
         break;
+        }
+        else{
+          questionNo =questionNo +  1
+          askQuestion(questionNo)
+          break;
+        }
+
       case 1:
+        if(artistOrigin){
         $("#question").html(questions[1])
         const places = generateLocations(artistOrigin,3)
         randomIndex = Math.floor(Math.random() * (places.length + 1))
         places.splice(randomIndex,0,artistOrigin)
         appendAnswers(places)
+        numQuestions += 1
+        
         break;
+        }
+        else{
+          questionNo =questionNo +  1
+          askQuestion(questionNo)
+          break;
+        }
       case 2:
+        if(artistRelease){
         $("#question").html(questions[2])
         const albums = generateAlbums(artistRelease,3)
         randomIndex = Math.floor(Math.random() * (albums.length + 1))
         albums.splice(randomIndex,0,artistRelease)
         appendAnswers(albums)
+        numQuestions += 1
         break;
+        }
+        else{
+          questionNo = questionNo + 1
+          askQuestion(questionNo)
+          break;
+        }
       case 3:
-        displayResults(3,playerScore)
+        displayResults(numQuestions,playerScore)
     }
   };
   //displays the users score using the playerScore var and the declares that the game is oever, takes in the total number of questions as param 1 and total right as param 2
   function displayResults(noQuestions, NoRight){
-    alert(NoRight+"/"+noQuestions +" questions correct")
+    $("#answers").css("display","none")
+    console.log(noQuestions +`/`+ NoRight)
+    $("#Results").append(`<p>Results<br>${Math.floor(NoRight/noQuestions*100)}% correct<p> `)
+    resultEle.forEach((currEle)=>{
+      console.log(currEle)
+      $("#Results").append(currEle)
+    }) 
     questionNo = null;
   };
   //this function appends 4 answers to the h3 elements in the html in random order the correct answer being the fourth input param and also increases question no by 1 
@@ -136,7 +181,7 @@ $("#submitArtist").on('click', ()=>{
     answers.forEach((answer, indx)=>{
       $(`#answer${indx}`).html(answer)
     })
-    questionNo= questionNo + 1;
+    questionNo = questionNo + 1;
   }
   //this function takes in the question that you are currently on and sees whether the checkbox filled correlates with the correct answer for that question, if it does then it adds one to the score
   function takeScore(questionNo){
@@ -147,16 +192,29 @@ $("#submitArtist").on('click', ()=>{
       case 1:
       if($(`label[for=${currCheckbox}]`).html() == artistStartYr){
         playerScore += 1
+        //if questions are correct then the proper html element gets appended to the body otherwise the else statment is hit and the proper html statement gets appended
+        resultEle.unshift($(`<p class = correct> Question 1: Correct <br> The Question: ${questions[0]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}</p><br>`))
+      }
+      else{
+        resultEle.unshift($(`<p class = inCorrect> Question 1: Incorrect <br> The Question: ${questions[0]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}<br>Correct answer: ${artistStartYr}</p><br>`))
       }
       break;
       case 2:
       if($(`label[for=${currCheckbox}]`).html() == artistOrigin){
         playerScore += 1
+        resultEle.unshift($(`<p class = correct> Question 2: Correct <br> The Question: ${questions[1]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}</p><br>`))
+      }
+      else{
+        resultEle.unshift($(`<p class = inCorrect> Question 2: Incorrect <br> The Question: ${questions[1]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}<br>Correct answer: ${artistOrigin}</p><br>`))
       }
       break;
       case 3:
       if($(`label[for=${currCheckbox}]`).html() == artistRelease){
         playerScore += 1
+        resultEle.unshift($(`<p class = correct> Question 3: Correct <br> The Question: ${questions[2]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}</p><br>`))
+      }
+      else{
+        resultEle.unshift($(`<p class = inCorrect> Question 3: Incorrect <br> The Question: ${questions[2]}<br>Your Answer: ${$(`label[for=${currCheckbox}]`).html()}<br>Correct answer: ${artistRelease}</p><br>`))
       }
       break;
     }
@@ -177,7 +235,7 @@ $("#submitArtist").on('click', ()=>{
   //function generates a array of random albums, length is determined by the numAlbums input, album to avoid placing in array is specefied by the avoid album param
   function generateAlbums(avoidAlbum,numAlbums){
   const returnAlbums = []
-  const albums = ["The Piper at the Gates of Dawn","A Saucerful of Secrets","More","Ummagumma","Atom Heart Mother","Meddle","Obscured by Clouds","The Dark Side of the Moon","Wish You Were Here","Animals","The Final Cut","Eagles","Desperado","Hotel California","The Long Run","Hell Freezes Over","Hybrid Theory","Meteora","Minutes to Midnight","A Thousand Suns","Living Things","Indicud","Satellite Flight: The Journey to Mother Moon","Speedin' Bullet 2 Heaven","Passion, Pain & Demon Slayin","Man on the Moon III: The Chosen","Day 'n' Nite","Pursuit of Happiness"]
+  const albums = ["Close Encounters", "Creativity Lost", "Dopplebangers", "Quantum Crunk Theory", "Brilliant God Nothing Space","The Villian's Journey", "Bad Cartoons", "A Hole In The Fourth Walls", "Broken Thought", "Laid To Rest", "My Curse", "Antimacy","Anger","The Faded Line","Lamb Of God","Senseless War", "Sauce", "Big Ups", "Ivory","An Album Name", "Oleg's App", "2020","Run It","Hello World","JavaScript Hard"]
   let i = 0
   while (i < numAlbums){
     let randomAlbum = albums[Math.floor(Math.random() * albums.length)]
