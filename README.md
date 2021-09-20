@@ -17,5 +17,6 @@ Future Enhancements
 
 Link
 Check out the app @ https://oshprengel.github.io/Artist_Quiz/
+
 ScreenShot
 <img width="952" alt="Screen shot" src="https://user-images.githubusercontent.com/24393800/133953723-87b46db9-cc72-468e-ba44-1e81f656ae93.png">
